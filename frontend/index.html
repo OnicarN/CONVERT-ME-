@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>ConvertMe</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0a0f;
+      --surface: #13131a;
+      --border:  #252533;
+      --accent:  #7c6bff;
+      --accent2: #ff6b9d;
+      --text:    #e8e8f0;
+      --muted:   #6b6b88;
+      --success: #4ade80;
+      --error:   #f87171;
+    }
+
+    body {
+      font-family: sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    p.sub { color: var(--muted); margin-bottom: 32px; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .tab {
+      padding: 10px 28px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .95rem;
+      transition: all .2s;
+    }
+    .tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      font-weight: 700;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 48px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: border-color .2s;
+    }
+    .dropzone:hover { border-color: var(--accent); }
+    .dropzone input {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .dropzone .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .dropzone strong { display: block; margin-bottom: 4px; }
+    .dropzone span { color: var(--muted); font-size: .9rem; }
+
+    .preview-wrap { display: none; margin-top: 20px; text-align: center; }
+    .preview-img  { max-width: 100%; max-height: 200px; border-radius: 10px; border: 1px solid var(--border); }
+    .preview-video { max-width: 100%; max-height: 200px; border-radius: 10px; border: 1px solid var(--border); }
+    .file-info { margin-top: 8px; font-size: .8rem; color: var(--muted); }
+
+    .row { margin-top: 24px; }
+    label {
+      display: block; font-size: .75rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px;
+    }
+    select {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; font-size: .95rem;
+    }
+
+    button.convert {
+      width: 100%; margin-top: 28px; padding: 14px;
+      background: linear-gradient(135deg, var(--accent), #9d8fff);
+      color: white; font-size: 1rem; font-weight: 700;
+      border: none; border-radius: 10px; cursor: pointer;
+      transition: opacity .2s;
+    }
+    button.convert:hover:not(:disabled) { opacity: .85; }
+    button.convert:disabled { opacity: .4; cursor: not-allowed; }
+
+    .status {
+      display: none; margin-top: 20px;
+      padding: 12px 16px; border-radius: 10px; font-size: .9rem;
+    }
+    .status.loading { background: rgba(124,107,255,.12); color: var(--accent);  border: 1px solid rgba(124,107,255,.3); }
+    .status.success { background: rgba(74,222,128,.1);  color: var(--success); border: 1px solid rgba(74,222,128,.3); }
+    .status.error   { background: rgba(248,113,113,.1); color: var(--error);   border: 1px solid rgba(248,113,113,.3); }
+
+    .warning {
+      margin-top: 16px; padding: 12px 16px;
+      background: rgba(255,200,0,.08); border: 1px solid rgba(255,200,0,.2);
+      border-radius: 10px; font-size: .85rem; color: #ffd060;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>ConvertMe</h1>
+  <p class="sub">Convierte imágenes, audios y vídeos al instante</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="cambiarTab('imagen')">🖼️ Imagen</button>
+    <button class="tab"        onclick="cambiarTab('audio')">🎵 Audio</button>
+    <button class="tab"        onclick="cambiarTab('video')">🎬 Vídeo</button>
+  </div>
+
+  <div class="card">
+
+    <!-- ── Panel Imagen ───────────────────────────────────── -->
+    <div class="panel active" id="panel-imagen">
+      <div class="dropzone">
+        <input type="file" id="img-input" accept="image/*" />
+        <div class="icon">🖼️</div>
+        <strong>Arrastra tu imagen aquí</strong>
+        <span>JPG, PNG, GIF, BMP, WEBP, TIFF</span>
+      </div>
+      <div class="preview-wrap" id="img-preview-wrap">
+        <img class="preview-img" id="img-preview" src="" alt="preview" />
+        <div class="file-info" id="img-info"></div>
+      </div>
+      <div class="row">
+        <label>Convertir a</label>
+        <select id="img-format">
+          <option value="png">PNG</option>
+          <option value="jpg">JPG</option>
+          <option value="webp">WEBP</option>
+          <option value="gif">GIF</option>
+          <option value="bmp">BMP</option>
+          <option value="tiff">TIFF</option>
+        </select>
+      </div>
+      <button class="convert" id="img-btn" disabled>Convertir imagen</button>
+      <div class="status" id="img-status"></div>
+    </div>
+
+    <!-- ── Panel Audio ────────────────────────────────────── -->
+    <div class="panel" id="panel-audio">
+      <div class="dropzone">
+        <input type="file" id="aud-input" accept="audio/*" />
+        <div class="icon">🎵</div>
+        <strong>Arrastra tu audio aquí</strong>
+        <span>MP3, WAV, OGG, AAC, FLAC</span>
+      </div>
+      <div class="preview-wrap" id="aud-preview-wrap">
+        <audio controls id="aud-preview" style="width:100%; margin-top:8px;"></audio>
+        <div class="file-info" id="aud-info"></div>
+      </div>
+      <div class="row">
+        <label>Convertir a</label>
+        <select id="aud-format">
+          <option value="mp3">MP3</option>
+          <option value="wav">WAV</option>
+          <option value="ogg">OGG</option>
+          <option value="aac">AAC</option>
+          <option value="flac">FLAC</option>
+        </select>
+      </div>
+      <button class="convert" id="aud-btn" disabled>Convertir audio</button>
+      <div class="status" id="aud-status"></div>
+    </div>
+
+    <!-- ── Panel Vídeo ────────────────────────────────────── -->
+    <div class="panel" id="panel-video">
+      <div class="dropzone">
+        <input type="file" id="vid-input" accept="video/*" />
+        <div class="icon">🎬</div>
+        <strong>Arrastra tu vídeo aquí</strong>
+        <span>MP4, AVI, MOV, MKV, WEBM</span>
+      </div>
+      <div class="preview-wrap" id="vid-preview-wrap">
+        <video controls class="preview-video" id="vid-preview"></video>
+        <div class="file-info" id="vid-info"></div>
+      </div>
+      <div class="row">
+        <label>Convertir a</label>
+        <select id="vid-format">
+          <option value="mp4">MP4</option>
+          <option value="avi">AVI</option>
+          <option value="mov">MOV</option>
+          <option value="mkv">MKV</option>
+          <option value="webm">WEBM</option>
+        </select>
+      </div>
+      <button class="convert" id="vid-btn" disabled>Convertir vídeo</button>
+      <div class="status" id="vid-status"></div>
+      <div class="warning">
+        ⚠️ Los vídeos grandes pueden tardar varios minutos en convertirse. Ten paciencia.
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Pestañas ──────────────────────────────────────────────
+    function cambiarTab(tipo) {
+      const tabs   = document.querySelectorAll('.tab');
+      const tipos  = ['imagen', 'audio', 'video'];
+      tabs.forEach((t, i) => t.classList.toggle('active', tipos[i] === tipo));
+      tipos.forEach(t => {
+        document.getElementById('panel-' + t).classList.toggle('active', t === tipo);
+      });
+    }
+
+    // ── Helper descarga ───────────────────────────────────────
+    function descargar(blob, nombreOriginal, formato) {
+      const base = nombreOriginal.replace(/\.[^.]+$/, '');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = base + '.' + formato;
+      a.click();
+    }
+
+    function mostrarEstado(el, tipo, msg) {
+      el.className = 'status ' + tipo;
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    // ── Imagen ────────────────────────────────────────────────
+    let imgFile = null;
+    document.getElementById('img-input').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      imgFile = file;
+      document.getElementById('img-preview').src = URL.createObjectURL(file);
+      document.getElementById('img-preview-wrap').style.display = 'block';
+      document.getElementById('img-info').textContent = `${file.name} · ${(file.size/1024).toFixed(1)} KB`;
+      document.getElementById('img-btn').disabled = false;
+    });
+
+    document.getElementById('img-btn').addEventListener('click', async () => {
+      if (!imgFile) return;
+      const status = document.getElementById('img-status');
+      mostrarEstado(status, 'loading', '⏳ Convirtiendo imagen...');
+      document.getElementById('img-btn').disabled = true;
+      const form = new FormData();
+      form.append('file', imgFile);
+      form.append('format', document.getElementById('img-format').value);
+      try {
+        const res = await fetch('/api/convert/image', { method: 'POST', body: form });
+        if (!res.ok) throw new Error('Error en el servidor');
+        descargar(await res.blob(), imgFile.name, document.getElementById('img-format').value);
+        mostrarEstado(status, 'success', '✅ ¡Conversión completada!');
+      } catch (e) {
+        mostrarEstado(status, 'error', '❌ ' + e.message);
+      } finally {
+        document.getElementById('img-btn').disabled = false;
+      }
+    });
+
+    // ── Audio ─────────────────────────────────────────────────
+    let audFile = null;
+    document.getElementById('aud-input').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      audFile = file;
+      document.getElementById('aud-preview').src = URL.createObjectURL(file);
+      document.getElementById('aud-preview-wrap').style.display = 'block';
+      document.getElementById('aud-info').textContent = `${file.name} · ${(file.size/1024).toFixed(1)} KB`;
+      document.getElementById('aud-btn').disabled = false;
+    });
+
+    document.getElementById('aud-btn').addEventListener('click', async () => {
+      if (!audFile) return;
+      const status = document.getElementById('aud-status');
+      mostrarEstado(status, 'loading', '⏳ Convirtiendo audio...');
+      document.getElementById('aud-btn').disabled = true;
+      const form = new FormData();
+      form.append('file', audFile);
+      form.append('format', document.getElementById('aud-format').value);
+      try {
+        const res = await fetch('/api/convert/audio', { method: 'POST', body: form });
+        if (!res.ok) throw new Error('Error en el servidor');
+        descargar(await res.blob(), audFile.name, document.getElementById('aud-format').value);
+        mostrarEstado(status, 'success', '✅ ¡Conversión completada!');
+      } catch (e) {
+        mostrarEstado(status, 'error', '❌ ' + e.message);
+      } finally {
+        document.getElementById('aud-btn').disabled = false;
+      }
+    });
+
+    // ── Vídeo ─────────────────────────────────────────────────
+    let vidFile = null;
+    document.getElementById('vid-input').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      vidFile = file;
+      document.getElementById('vid-preview').src = URL.createObjectURL(file);
+      document.getElementById('vid-preview-wrap').style.display = 'block';
+      document.getElementById('vid-info').textContent = `${file.name} · ${(file.size/1024/1024).toFixed(1)} MB`;
+      document.getElementById('vid-btn').disabled = false;
+    });
+
+    document.getElementById('vid-btn').addEventListener('click', async () => {
+      if (!vidFile) return;
+      const status = document.getElementById('vid-status');
+      mostrarEstado(status, 'loading', '⏳ Convirtiendo vídeo, puede tardar unos minutos...');
+      document.getElementById('vid-btn').disabled = true;
+      const form = new FormData();
+      form.append('file', vidFile);
+      form.append('format', document.getElementById('vid-format').value);
+      try {
+        const res = await fetch('/api/convert/video', { method: 'POST', body: form });
+        if (!res.ok) throw new Error('Error en el servidor');
+        descargar(await res.blob(), vidFile.name, document.getElementById('vid-format').value);
+        mostrarEstado(status, 'success', '✅ ¡Conversión completada!');
+      } catch (e) {
+        mostrarEstado(status, 'error', '❌ ' + e.message);
+      } finally {
+        document.getElementById('vid-btn').disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>
