@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>ConvertMe</title>
+  <title>ConvertMe — ⚡ Modo Loco</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,8 +18,20 @@
       --error:   #f87171;
     }
 
+    body.light-mode {
+      --bg:      #f5f5fa;
+      --surface: #ffffff;
+      --border:  #e0e0e8;
+      --accent:  #7c6bff;
+      --accent2: #ff6b9d;
+      --text:    #1a1a2e;
+      --muted:   #8888a0;
+      --success: #22c55e;
+      --error:   #ef4444;
+    }
+
     body {
-      font-family: sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -27,22 +39,215 @@
       flex-direction: column;
       align-items: center;
       padding: 48px 20px;
+      animation: fadeIn 0.6s ease-out;
+      transition: background-color 0.3s, color 0.3s;
+      cursor: none;
+      overflow-x: hidden;
     }
 
+    /* ── CUSTOM CURSOR ─────────── */
+    .cursor-dot {
+      position: fixed; pointer-events: none; z-index: 99999;
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
+      transition: width .2s, height .2s, background .2s;
+    }
+    .cursor-dot.hovering {
+      width: 16px; height: 16px;
+      background: var(--accent2);
+    }
+    .cursor-ring {
+      position: fixed; pointer-events: none; z-index: 99998;
+      width: 36px; height: 36px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
+      transition: width .3s, height .3s, border-color .3s, background .3s;
+    }
+    .cursor-ring.hovering {
+      width: 56px; height: 56px;
+      border-color: var(--accent2);
+      background: rgba(124,107,255,.08);
+    }
+
+    /* ── MOUSE TRAIL ────────────── */
+    .trail-dot {
+      position: fixed; pointer-events: none; z-index: 99997;
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      opacity: 0.6;
+    }
+
+    /* ── MATRIX RAIN CANVAS ────── */
+    #matrix-canvas {
+      position: fixed; inset: 0; z-index: -2;
+      width: 100%; height: 100%;
+      opacity: 0.12;
+    }
+
+    /* ── SPARKLE CURSOR EMITTER ─── */
+    .sparkle {
+      position: fixed; pointer-events: none; z-index: 99996;
+      width: 4px; height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: sparkleFade 0.8s ease-out forwards;
+    }
+    @keyframes sparkleFade {
+      0%   { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0) translateY(-30px); opacity: 0; }
+    }
+
+    /* ── NEON GLOW TITLE ────────── */
+    @keyframes neonPulse {
+      0%, 100% { filter: drop-shadow(0 0 8px var(--accent)) drop-shadow(0 0 20px var(--accent2)); }
+      50%      { filter: drop-shadow(0 0 20px var(--accent)) drop-shadow(0 0 40px var(--accent2)) drop-shadow(0 0 60px var(--accent)); }
+    }
     h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      font-size: 3rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), var(--accent2), #ffd060, var(--accent), var(--accent2));
+      background-size: 400% 400%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
+      cursor: pointer;
+      user-select: none;
+      animation: neonPulse 3s ease-in-out infinite, gradientShift 6s ease infinite;
+      position: relative;
+      letter-spacing: 2px;
     }
-    p.sub { color: var(--muted); margin-bottom: 32px; }
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ── GLITCH OVERLAY ─────────── */
+    .glitch-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 400% 400%;
+      animation: gradientShift 6s ease infinite;
+      opacity: 0;
+      pointer-events: none;
+    }
+    h1.glitching .glitch-overlay {
+      opacity: 1;
+    }
+    @keyframes glitchSkew {
+      0%   { transform: skew(0deg); }
+      20%  { transform: skew(-3deg); }
+      40%  { transform: skew(2deg); }
+      60%  { transform: skew(-1deg); }
+      80%  { transform: skew(3deg); }
+      100% { transform: skew(0deg); }
+    }
+    h1.glitching {
+      animation: glitchSkew 0.3s ease-in-out 3, neonPulse 3s ease-in-out infinite, gradientShift 6s ease infinite !important;
+    }
+    h1.glitching::before,
+    h1.glitching::after {
+      content: attr(data-text);
+      position: absolute; inset: 0;
+      background: inherit;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 400% 400%;
+      animation: gradientShift 6s ease infinite;
+      pointer-events: none;
+    }
+    h1.glitching::before {
+      clip-path: inset(0 0 70% 0);
+      transform: translateX(-3px);
+      animation: glitchSkew 0.3s ease-in-out 3, gradientShift 6s ease infinite;
+    }
+    h1.glitching::after {
+      clip-path: inset(70% 0 0 0);
+      transform: translateX(3px);
+      animation: glitchSkew 0.3s ease-in-out 3, gradientShift 6s ease infinite;
+    }
+
+    p.sub {
+      color: var(--muted);
+      margin-bottom: 32px;
+      font-size: 1rem;
+    }
+
+    /* ── TYPEWRITER CURSOR ──────── */
+    .typewriter-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.2em;
+      background: var(--accent);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 0.8s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0; }
+    }
+
+    /* ── FLOATING RAINBOW BORDER ── */
+    @property --angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+    .card {
+      position: relative;
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 36px;
+      width: 100%;
+      max-width: 560px;
+      transition: transform 0.1s ease-out;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 18px;
+      background: conic-gradient(from var(--angle), var(--accent), var(--accent2), #ffd060, #4ade80, #60a5fa, var(--accent));
+      z-index: -1;
+      animation: spinBorder 4s linear infinite;
+      opacity: 0.6;
+      transition: opacity .3s;
+    }
+    .card:hover::before {
+      opacity: 1;
+    }
+    @keyframes spinBorder {
+      to { --angle: 360deg; }
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background: var(--surface);
+      z-index: -1;
+    }
+
+    .card { transition: all 0.3s ease; }
+    .card:not(.tilt-disable):hover {
+      box-shadow: 0 0 50px rgba(124,107,255,.15);
+    }
 
     .tabs {
       display: flex;
       gap: 8px;
       margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
     }
     .tab {
       padding: 10px 28px;
@@ -53,25 +258,33 @@
       cursor: pointer;
       font-size: .95rem;
       transition: all .2s;
+      position: relative;
+      overflow: hidden;
     }
+    .tab::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity .3s;
+      border-radius: 99px;
+    }
+    .tab:hover::before { opacity: 0.1; }
     .tab.active {
       background: var(--accent);
       border-color: var(--accent);
       color: white;
       font-weight: 700;
     }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 36px;
-      width: 100%;
-      max-width: 560px;
-    }
+    .tab.active::before { display: none; }
 
     .panel { display: none; }
-    .panel.active { display: block; }
+    .panel.active { display: block; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(30px) scale(0.97); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
 
     .dropzone {
       border: 2px dashed var(--border);
@@ -80,9 +293,14 @@
       text-align: center;
       cursor: pointer;
       position: relative;
-      transition: border-color .2s;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      overflow: hidden;
     }
-    .dropzone:hover { border-color: var(--accent); }
+    .dropzone:hover {
+      border-color: var(--accent);
+      transform: scale(1.01);
+      box-shadow: 0 0 30px rgba(124,107,255,.08);
+    }
     .dropzone input {
       position: absolute; inset: 0;
       opacity: 0; cursor: pointer; width: 100%; height: 100%;
@@ -91,7 +309,26 @@
     .dropzone strong { display: block; margin-bottom: 4px; }
     .dropzone span { color: var(--muted); font-size: .9rem; }
 
+    @keyframes pulseBorder {
+      0%, 100% { border-color: var(--border); }
+      50%      { border-color: var(--accent); }
+    }
+    .dropzone.dragover {
+      border-color: var(--accent);
+      animation: pulseBorder 1s ease-in-out infinite;
+      background: rgba(124,107,255,.05);
+      transform: scale(1.02);
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
     .preview-wrap { display: none; margin-top: 20px; text-align: center; }
+    .preview-wrap.show {
+      display: block !important;
+      animation: scaleIn 0.3s ease-out;
+    }
     .preview-img  { max-width: 100%; max-height: 200px; border-radius: 10px; border: 1px solid var(--border); }
     .preview-video { max-width: 100%; max-height: 200px; border-radius: 10px; border: 1px solid var(--border); }
     .file-info { margin-top: 8px; font-size: .8rem; color: var(--muted); }
@@ -105,49 +342,230 @@
       width: 100%; padding: 10px 14px;
       background: var(--bg); border: 1px solid var(--border);
       color: var(--text); border-radius: 8px; font-size: .95rem;
+      transition: border-color .2s;
     }
+    select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 12px rgba(124,107,255,.15); }
 
+    /* ── MAGNETIC CONVERT BUTTON ── */
     button.convert {
       width: 100%; margin-top: 28px; padding: 14px;
-      background: linear-gradient(135deg, var(--accent), #9d8fff);
+      background: linear-gradient(135deg, var(--accent), #9d8fff, var(--accent2));
+      background-size: 200% 200%;
       color: white; font-size: 1rem; font-weight: 700;
       border: none; border-radius: 10px; cursor: pointer;
-      transition: opacity .2s;
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+      animation: btnBgShift 3s ease infinite;
     }
-    button.convert:hover:not(:disabled) { opacity: .85; }
+    @keyframes btnBgShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    button.convert:hover:not(:disabled) {
+      opacity: .95;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 30px rgba(124,107,255,.35), 0 0 0 0 rgba(124,107,255,.2);
+      animation: btnPulse 1.5s ease-in-out infinite, btnBgShift 3s ease infinite;
+    }
+    @keyframes btnPulse {
+      0%, 100% { box-shadow: 0 8px 30px rgba(124,107,255,.35), 0 0 0 0 rgba(124,107,255,.2); }
+      50%      { box-shadow: 0 8px 40px rgba(124,107,255,.45), 0 0 0 12px rgba(124,107,255,0); }
+    }
     button.convert:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── RIPPLE (mejorado) ──────── */
+    .ripple-btn { position: relative; overflow: hidden; }
+    .ripple-effect {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.5);
+      transform: scale(0);
+      animation: rippleAnim 0.7s ease-out;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
+    }
 
     .status {
       display: none; margin-top: 20px;
       padding: 12px 16px; border-radius: 10px; font-size: .9rem;
+      animation: scaleIn 0.3s ease-out;
     }
     .status.loading { background: rgba(124,107,255,.12); color: var(--accent);  border: 1px solid rgba(124,107,255,.3); }
     .status.success { background: rgba(74,222,128,.1);  color: var(--success); border: 1px solid rgba(74,222,128,.3); }
     .status.error   { background: rgba(248,113,113,.1); color: var(--error);   border: 1px solid rgba(248,113,113,.3); }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status.loading::before {
+      content: '';
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--accent);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes checkDraw { to { stroke-dashoffset: 0; } }
+    .checkmark { width: 24px; height: 24px; display: inline-block; vertical-align: middle; margin-right: 8px; }
+    .checkmark-circle { fill: none; stroke: var(--success); stroke-width: 2; }
+    .checkmark-check {
+      fill: none; stroke: var(--success); stroke-width: 3;
+      stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: 30; stroke-dashoffset: 30;
+      animation: checkDraw 0.3s ease-out forwards;
+    }
+
+    .progress-bar {
+      margin-top: 16px; height: 6px;
+      background: var(--bg); border-radius: 3px; overflow: hidden;
+      display: none;
+    }
+    .progress-bar.active { display: block; }
+    .progress-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .progress-bar-fill.indeterminate {
+      width: 50%;
+      background: linear-gradient(90deg, var(--accent) 25%, var(--accent2) 50%, var(--accent) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
 
     .warning {
       margin-top: 16px; padding: 12px 16px;
       background: rgba(255,200,0,.08); border: 1px solid rgba(255,200,0,.2);
       border-radius: 10px; font-size: .85rem; color: #ffd060;
     }
+
+    /* ── CONFETTI ───────────────── */
+    .confetti-piece {
+      position: fixed;
+      width: 10px; height: 10px;
+      top: -10px;
+      animation: confettiFall linear forwards;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── FIREWORK / EXPLOSION ───── */
+    .firework {
+      position: fixed; pointer-events: none; z-index: 9999;
+      border-radius: 50%;
+      animation: fireworkBoom ease-out forwards;
+    }
+    @keyframes fireworkBoom {
+      0%   { transform: scale(0); opacity: 1; }
+      50%  { opacity: 1; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+
+    /* ── FLOATING EMOJIS ────────── */
+    .float-emoji {
+      position: fixed; pointer-events: none; z-index: 9999;
+      font-size: 1.5rem;
+      animation: floatEmoji linear forwards;
+    }
+    @keyframes floatEmoji {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-200px) rotate(360deg); opacity: 0; }
+    }
+
+    /* ── SCREEN SHAKE ───────────── */
+    @keyframes shakeScreen {
+      0%, 100% { transform: translate(0, 0); }
+      10%      { transform: translate(-4px, 3px); }
+      20%      { transform: translate(4px, -3px); }
+      30%      { transform: translate(-3px, 4px); }
+      40%      { transform: translate(3px, -4px); }
+      50%      { transform: translate(-2px, 2px); }
+      60%      { transform: translate(2px, -2px); }
+      70%      { transform: translate(-1px, 1px); }
+    }
+    body.shaking {
+      animation: shakeScreen 0.5s ease-in-out;
+    }
+
+    /* ── THEME TOGGLE ───────────── */
+    .theme-toggle {
+      position: fixed;
+      top: 40px;
+      right: 330px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .2s, background .2s, box-shadow .2s;
+      z-index: 10;
+    }
+    .theme-toggle:hover {
+      transform: scale(1.1) rotate(15deg);
+      box-shadow: 0 0 20px rgba(124,107,255,.2);
+    }
+
+    /* ── FADE IN ────────────────── */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ─────────────── */
+    @media (max-width: 600px) {
+      body { padding: 24px 12px; }
+      h1 { font-size: 2rem; }
+      .card { padding: 24px; }
+      .theme-toggle { top: 20px; right: 20px; }
+      .tab { padding: 8px 18px; font-size: .85rem; }
+    }
   </style>
 </head>
 <body>
 
-  <h1>ConvertMe</h1>
-  <p class="sub">Convierte imágenes, audios y vídeos al instante</p>
+  <canvas id="matrix-canvas"></canvas>
+
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <button class="theme-toggle ripple-btn" id="theme-btn" onclick="cambiarTema()">🌙</button>
+
+  <h1 id="titulo" data-text="Convert-Me!" onclick="glitchTitle()">Convert-Me!
+    <span class="glitch-overlay">Convert-Me!</span>
+  </h1>
+  <p class="sub" id="subtitle"><span id="subtext"></span><span class="typewriter-cursor"></span></p>
 
   <div class="tabs">
-    <button class="tab active" onclick="cambiarTab('imagen')">🖼️ Imagen</button>
-    <button class="tab"        onclick="cambiarTab('audio')">🎵 Audio</button>
-    <button class="tab"        onclick="cambiarTab('video')">🎬 Vídeo</button>
+    <button class="tab active ripple-btn" onclick="cambiarTab('imagen')">🖼️ Imagen</button>
+    <button class="tab ripple-btn"        onclick="cambiarTab('audio')">🎵 Audio</button>
+    <button class="tab ripple-btn"        onclick="cambiarTab('video')">🎬 Vídeo</button>
   </div>
 
-  <div class="card">
-
-    <!-- ── Panel Imagen ───────────────────────────────────── -->
+  <div class="card" id="mainCard">
+    <!-- Panel Imagen -->
     <div class="panel active" id="panel-imagen">
-      <div class="dropzone">
+      <div class="dropzone" id="img-dropzone">
         <input type="file" id="img-input" accept="image/*" />
         <div class="icon">🖼️</div>
         <strong>Arrastra tu imagen aquí</strong>
@@ -168,13 +586,14 @@
           <option value="tiff">TIFF</option>
         </select>
       </div>
-      <button class="convert" id="img-btn" disabled>Convertir imagen</button>
+      <button class="convert ripple-btn" id="img-btn" disabled>Convertir imagen</button>
+      <div class="progress-bar" id="img-progress"><div class="progress-bar-fill" id="img-progress-fill"></div></div>
       <div class="status" id="img-status"></div>
     </div>
 
-    <!-- ── Panel Audio ────────────────────────────────────── -->
+    <!-- Panel Audio -->
     <div class="panel" id="panel-audio">
-      <div class="dropzone">
+      <div class="dropzone" id="aud-dropzone">
         <input type="file" id="aud-input" accept="audio/*" />
         <div class="icon">🎵</div>
         <strong>Arrastra tu audio aquí</strong>
@@ -194,13 +613,14 @@
           <option value="flac">FLAC</option>
         </select>
       </div>
-      <button class="convert" id="aud-btn" disabled>Convertir audio</button>
+      <button class="convert ripple-btn" id="aud-btn" disabled>Convertir audio</button>
+      <div class="progress-bar" id="aud-progress"><div class="progress-bar-fill" id="aud-progress-fill"></div></div>
       <div class="status" id="aud-status"></div>
     </div>
 
-    <!-- ── Panel Vídeo ────────────────────────────────────── -->
+    <!-- Panel Vídeo -->
     <div class="panel" id="panel-video">
-      <div class="dropzone">
+      <div class="dropzone" id="vid-dropzone">
         <input type="file" id="vid-input" accept="video/*" />
         <div class="icon">🎬</div>
         <strong>Arrastra tu vídeo aquí</strong>
@@ -220,27 +640,309 @@
           <option value="webm">WEBM</option>
         </select>
       </div>
-      <button class="convert" id="vid-btn" disabled>Convertir vídeo</button>
+      <button class="convert ripple-btn" id="vid-btn" disabled>Convertir vídeo</button>
+      <div class="progress-bar" id="vid-progress"><div class="progress-bar-fill" id="vid-progress-fill"></div></div>
       <div class="status" id="vid-status"></div>
-      <div class="warning">
-        ⚠️ Los vídeos grandes pueden tardar varios minutos en convertirse. Ten paciencia.
-      </div>
+      <div class="warning">⚠️ Los vídeos grandes pueden tardar varios minutos en convertirse. Ten paciencia.</div>
     </div>
-
   </div>
 
   <script>
-    // ── Pestañas ──────────────────────────────────────────────
-    function cambiarTab(tipo) {
-      const tabs   = document.querySelectorAll('.tab');
-      const tipos  = ['imagen', 'audio', 'video'];
-      tabs.forEach((t, i) => t.classList.toggle('active', tipos[i] === tipo));
-      tipos.forEach(t => {
-        document.getElementById('panel-' + t).classList.toggle('active', t === tipo);
+    // ═══════════════════════════════════════════════════════════
+    //  1. MATRIX RAIN
+    // ═══════════════════════════════════════════════════════════
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    let cols, drops;
+
+    function resizeMatrix() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      cols = Math.floor(canvas.width / 14);
+      drops = Array(cols).fill(1);
+    }
+    resizeMatrix();
+    window.addEventListener('resize', resizeMatrix);
+
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(10,10,15,0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#7c6bff';
+      ctx.font = '13px monospace';
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * 14, drops[i] * 14);
+        if (drops[i] * 14 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }
+    setInterval(drawMatrix, 55);
+
+    // ═══════════════════════════════════════════════════════════
+    //  2. CUSTOM CURSOR + TRAIL + SPARKLES
+    // ═══════════════════════════════════════════════════════════
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0;
+    let ringX = 0, ringY = 0;
+    const trail = [];
+    const TRAIL_LEN = 12;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX;
+      my = e.clientY;
+      dot.style.left = mx + 'px';
+      dot.style.top = my + 'px';
+
+      // trail
+      trail.push({ x: mx, y: my, life: 1 });
+      if (trail.length > TRAIL_LEN) trail.shift();
+
+      // sparkles
+      if (Math.random() < 0.15) {
+        const sp = document.createElement('div');
+        sp.className = 'sparkle';
+        sp.style.left = (mx + (Math.random() - 0.5) * 20) + 'px';
+        sp.style.top = (my + (Math.random() - 0.5) * 20) + 'px';
+        sp.style.background = ['#7c6bff','#ff6b9d','#ffd060','#4ade80'][Math.floor(Math.random() * 4)];
+        document.body.appendChild(sp);
+        setTimeout(() => sp.remove(), 800);
+      }
+    });
+
+    // hoverear elementos interactivos
+    document.querySelectorAll('.tab, .convert, .theme-toggle, .dropzone, h1, select').forEach(el => {
+      el.addEventListener('mouseenter', () => { dot.classList.add('hovering'); ring.classList.add('hovering'); });
+      el.addEventListener('mouseleave', () => { dot.classList.remove('hovering'); ring.classList.remove('hovering'); });
+    });
+
+    function animateRing() {
+      ringX += (mx - ringX) * 0.12;
+      ringY += (my - ringY) * 0.12;
+      ring.style.left = ringX + 'px';
+      ring.style.top = ringY + 'px';
+
+      // trail draw
+      trail.forEach((t, i) => {
+        const td = document.createElement('div');
+        td.className = 'trail-dot';
+        td.style.left = t.x + 'px';
+        td.style.top = t.y + 'px';
+        td.style.opacity = (i / trail.length) * 0.5;
+        td.style.width = td.style.height = (2 + (i / trail.length) * 4) + 'px';
+        document.body.appendChild(td);
+        requestAnimationFrame(() => td.remove());
       });
+
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    document.addEventListener('click', () => {
+      for (let i = 0; i < 8; i++) {
+        const sp = document.createElement('div');
+        sp.className = 'sparkle';
+        sp.style.left = (mx + (Math.random() - 0.5) * 40) + 'px';
+        sp.style.top = (my + (Math.random() - 0.5) * 40) + 'px';
+        sp.style.background = ['#7c6bff','#ff6b9d','#ffd060','#4ade80'][Math.floor(Math.random() * 4)];
+        sp.style.width = sp.style.height = (2 + Math.random() * 4) + 'px';
+        sp.style.animation = 'sparkleFade 0.6s ease-out forwards';
+        document.body.appendChild(sp);
+        setTimeout(() => sp.remove(), 600);
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    //  3. 3D TILT EFECTO EN LA CARD
+    // ═══════════════════════════════════════════════════════════
+    const card = document.getElementById('mainCard');
+    let tiltActive = true;
+
+    card.addEventListener('mousemove', e => {
+      if (!tiltActive) return;
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const tiltX = (y - 0.5) * -16;
+      const tiltY = (x - 0.5) * 16;
+      card.style.transform = `perspective(800px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.01,1.01,1.01)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    //  4. GLITCH / TEXT SCRAMBLE EN EL TÍTULO
+    // ═══════════════════════════════════════════════════════════
+    const titulo = document.getElementById('titulo');
+    const originalText = 'Convert-Me!';
+    const charsGlitch = '!<>-_\\/[]{}—=+*^?#________';
+
+    function scrambleText(target, finalText, duration = 600) {
+      const steps = 8;
+      const stepTime = duration / steps;
+      let current = 0;
+      const interval = setInterval(() => {
+        let result = '';
+        for (let i = 0; i < finalText.length; i++) {
+          if (i < current) {
+            result += finalText[i];
+          } else {
+            result += charsGlitch[Math.floor(Math.random() * charsGlitch.length)];
+          }
+        }
+        target.textContent = result;
+        current++;
+        if (current > finalText.length) {
+          clearInterval(interval);
+          target.textContent = finalText;
+        }
+      }, stepTime);
     }
 
-    // ── Helper descarga ───────────────────────────────────────
+    let glitchTimeout;
+
+    function glitchTitle() {
+      clearTimeout(glitchTimeout);
+      titulo.classList.add('glitching');
+      scrambleText(titulo, originalText, 400);
+      // floating emoji burst
+      burstEmojis(['🎉','✨','🔥','💜','⚡','🚀','🌟','💥'], 10);
+      glitchTimeout = setTimeout(() => {
+        titulo.classList.remove('glitching');
+      }, 800);
+    }
+
+    // auto-glitch cada 10s
+    setInterval(() => {
+      if (!document.hidden) glitchTitle();
+    }, 10000);
+
+    // ═══════════════════════════════════════════════════════════
+    //  5. TYPEWRITER SUBTITLE
+    // ═══════════════════════════════════════════════════════════
+    function typewriter(el, text, speed = 40, cb) {
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          el.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+        } else if (cb) cb();
+      }
+      type();
+    }
+    typewriter(document.getElementById('subtext'), 'Convierte imágenes, audios y vídeos al instante');
+
+    // ═══════════════════════════════════════════════════════════
+    //  6. FLOATING EMOJIS
+    // ═══════════════════════════════════════════════════════════
+    function burstEmojis(emojis, count = 8) {
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'float-emoji';
+        el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        el.style.left = (mx + (Math.random() - 0.5) * 200) + 'px';
+        el.style.top = (my + (Math.random() - 0.5) * 200) + 'px';
+        el.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+        el.style.animationDuration = (1 + Math.random() * 1.5) + 's';
+        el.style.animationDelay = (Math.random() * 0.3) + 's';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  7. FIREWORK / EXPLOSIÓN
+    // ═══════════════════════════════════════════════════════════
+    function fireworkExplosion(cx, cy, count = 30) {
+      const colores = ['#ff6b9d','#7c6bff','#ffd060','#4ade80','#60a5fa','#f472b6','#fff'];
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'firework';
+        const size = 4 + Math.random() * 8;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.background = colores[Math.floor(Math.random() * colores.length)];
+        const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.3;
+        const dist = 40 + Math.random() * 100;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+        p.style.left = cx + 'px';
+        p.style.top = cy + 'px';
+        p.style.animationDuration = (0.6 + Math.random() * 0.6) + 's';
+        p.style.setProperty('--dx', dx + 'px');
+        p.style.setProperty('--dy', dy + 'px');
+        p.style.animation = `fireworkBurst ${0.6 + Math.random() * 0.6}s ease-out forwards`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 1500);
+      }
+    }
+
+    // inject fireworkBurst keyframes
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = `
+      @keyframes fireworkBurst {
+        0%   { transform: translate(0,0) scale(0.5); opacity: 1; }
+        100% { transform: translate(var(--dx), var(--dy)) scale(1.5); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(styleSheet);
+
+    // ═══════════════════════════════════════════════════════════
+    //  8. SCREEN SHAKE
+    // ═══════════════════════════════════════════════════════════
+    function shakeScreen() {
+      document.body.classList.add('shaking');
+      setTimeout(() => document.body.classList.remove('shaking'), 500);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  9. MAGNETIC BUTTON EFFECT
+    // ═══════════════════════════════════════════════════════════
+    document.querySelectorAll('.convert').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        if (btn.disabled) return;
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        const maxDist = 20;
+        const dist = Math.min(Math.sqrt(x * x + y * y), maxDist);
+        const angle = Math.atan2(y, x);
+        const moveX = Math.cos(angle) * dist * 0.15;
+        const moveY = Math.sin(angle) * dist * 0.15;
+        btn.style.setProperty('--mx', moveX + 'px');
+        btn.style.setProperty('--my', moveY + 'px');
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.setProperty('--mx', '0px');
+        btn.style.setProperty('--my', '0px');
+      });
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    //  FUNCIONES EXISTENTES + MEJORADAS
+    // ═══════════════════════════════════════════════════════════
+
+    function cambiarTab(tipo) {
+      const tabs = document.querySelectorAll('.tab');
+      const tipos = ['imagen', 'audio', 'video'];
+      tabs.forEach((t, i) => t.classList.toggle('active', tipos[i] === tipo));
+      tipos.forEach(t => {
+        const panel = document.getElementById('panel-' + t);
+        panel.classList.toggle('active', t === tipo);
+        if (t === tipo) {
+          panel.style.animation = 'none';
+          panel.offsetHeight;
+          panel.style.animation = '';
+        }
+      });
+      burstEmojis(['🔄','✨','👀'], 5);
+    }
+
     function descargar(blob, nombreOriginal, formato) {
       const base = nombreOriginal.replace(/\.[^.]+$/, '');
       const a = document.createElement('a');
@@ -251,18 +953,96 @@
 
     function mostrarEstado(el, tipo, msg) {
       el.className = 'status ' + tipo;
-      el.textContent = msg;
       el.style.display = 'block';
+      if (tipo === 'success') {
+        el.innerHTML = '<svg class="checkmark" viewBox="0 0 24 24"><circle class="checkmark-circle" cx="12" cy="12" r="10"/><path class="checkmark-check" d="M6 12l4 4 8-8"/></svg> ' + msg;
+      } else {
+        el.innerHTML = msg;
+      }
     }
 
-    // ── Imagen ────────────────────────────────────────────────
+    function ocultarEstado(el) {
+      el.style.display = 'none';
+      el.className = 'status';
+    }
+
+    function mostrarProgress(id) {
+      const bar = document.getElementById(id);
+      bar.classList.add('active');
+      const fill = bar.querySelector('.progress-bar-fill');
+      fill.classList.add('indeterminate');
+      fill.style.width = '';
+    }
+
+    function ocultarProgress(id) {
+      const bar = document.getElementById(id);
+      const fill = bar.querySelector('.progress-bar-fill');
+      fill.classList.remove('indeterminate');
+      fill.style.width = '100%';
+      setTimeout(() => {
+        bar.classList.remove('active');
+        fill.style.width = '0%';
+      }, 400);
+    }
+
+    // Ripple
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.ripple-btn');
+      if (!btn) return;
+      const circle = document.createElement('span');
+      circle.className = 'ripple-effect';
+      const d = Math.max(btn.offsetWidth, btn.offsetHeight);
+      circle.style.width = circle.style.height = d + 'px';
+      const rect = btn.getBoundingClientRect();
+      circle.style.left = (e.clientX - rect.left - d / 2) + 'px';
+      circle.style.top = (e.clientY - rect.top - d / 2) + 'px';
+      btn.appendChild(circle);
+      setTimeout(() => circle.remove(), 700);
+    });
+
+    // Dropzone drag feedback
+    document.querySelectorAll('.dropzone').forEach(dz => {
+      ['dragenter', 'dragover'].forEach(evt => {
+        dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.add('dragover'); });
+      });
+      ['dragleave', 'drop'].forEach(evt => {
+        dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.remove('dragover'); });
+      });
+    });
+
+    // Confetti
+    function lanzarConfetti() {
+      const colores = ['#ff6b9d', '#7c6bff', '#ffd060', '#4ade80', '#60a5fa', '#f472b6'];
+      for (let i = 0; i < 60; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colores[Math.floor(Math.random() * colores.length)];
+        piece.style.width = (Math.random() * 8 + 4) + 'px';
+        piece.style.height = (Math.random() * 8 + 4) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        piece.style.animationDelay = (Math.random() * 1.5) + 's';
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 5000);
+      }
+    }
+
+    function onConvertSuccess() {
+      lanzarConfetti();
+      shakeScreen();
+      burstEmojis(['🎉','🔥','💜','⚡','🚀','🌟','💥','🎊'], 15);
+      fireworkExplosion(mx || window.innerWidth / 2, my || window.innerHeight / 2, 40);
+    }
+
+    // ── Imagen ──
     let imgFile = null;
     document.getElementById('img-input').addEventListener('change', function() {
       const file = this.files[0];
       if (!file) return;
       imgFile = file;
       document.getElementById('img-preview').src = URL.createObjectURL(file);
-      document.getElementById('img-preview-wrap').style.display = 'block';
+      document.getElementById('img-preview-wrap').classList.add('show');
       document.getElementById('img-info').textContent = `${file.name} · ${(file.size/1024).toFixed(1)} KB`;
       document.getElementById('img-btn').disabled = false;
     });
@@ -270,7 +1050,9 @@
     document.getElementById('img-btn').addEventListener('click', async () => {
       if (!imgFile) return;
       const status = document.getElementById('img-status');
-      mostrarEstado(status, 'loading', '⏳ Convirtiendo imagen...');
+      ocultarEstado(status);
+      mostrarEstado(status, 'loading', 'Convirtiendo imagen...');
+      mostrarProgress('img-progress');
       document.getElementById('img-btn').disabled = true;
       const form = new FormData();
       form.append('file', imgFile);
@@ -279,22 +1061,25 @@
         const res = await fetch('/api/convert/image', { method: 'POST', body: form });
         if (!res.ok) throw new Error('Error en el servidor');
         descargar(await res.blob(), imgFile.name, document.getElementById('img-format').value);
-        mostrarEstado(status, 'success', '✅ ¡Conversión completada!');
+        ocultarProgress('img-progress');
+        mostrarEstado(status, 'success', '¡Conversión completada!');
+        onConvertSuccess();
       } catch (e) {
-        mostrarEstado(status, 'error', '❌ ' + e.message);
+        ocultarProgress('img-progress');
+        mostrarEstado(status, 'error', 'Error: ' + e.message);
       } finally {
         document.getElementById('img-btn').disabled = false;
       }
     });
 
-    // ── Audio ─────────────────────────────────────────────────
+    // ── Audio ──
     let audFile = null;
     document.getElementById('aud-input').addEventListener('change', function() {
       const file = this.files[0];
       if (!file) return;
       audFile = file;
       document.getElementById('aud-preview').src = URL.createObjectURL(file);
-      document.getElementById('aud-preview-wrap').style.display = 'block';
+      document.getElementById('aud-preview-wrap').classList.add('show');
       document.getElementById('aud-info').textContent = `${file.name} · ${(file.size/1024).toFixed(1)} KB`;
       document.getElementById('aud-btn').disabled = false;
     });
@@ -302,7 +1087,9 @@
     document.getElementById('aud-btn').addEventListener('click', async () => {
       if (!audFile) return;
       const status = document.getElementById('aud-status');
-      mostrarEstado(status, 'loading', '⏳ Convirtiendo audio...');
+      ocultarEstado(status);
+      mostrarEstado(status, 'loading', 'Convirtiendo audio...');
+      mostrarProgress('aud-progress');
       document.getElementById('aud-btn').disabled = true;
       const form = new FormData();
       form.append('file', audFile);
@@ -311,22 +1098,25 @@
         const res = await fetch('/api/convert/audio', { method: 'POST', body: form });
         if (!res.ok) throw new Error('Error en el servidor');
         descargar(await res.blob(), audFile.name, document.getElementById('aud-format').value);
-        mostrarEstado(status, 'success', '✅ ¡Conversión completada!');
+        ocultarProgress('aud-progress');
+        mostrarEstado(status, 'success', '¡Conversión completada!');
+        onConvertSuccess();
       } catch (e) {
-        mostrarEstado(status, 'error', '❌ ' + e.message);
+        ocultarProgress('aud-progress');
+        mostrarEstado(status, 'error', 'Error: ' + e.message);
       } finally {
         document.getElementById('aud-btn').disabled = false;
       }
     });
 
-    // ── Vídeo ─────────────────────────────────────────────────
+    // ── Vídeo ──
     let vidFile = null;
     document.getElementById('vid-input').addEventListener('change', function() {
       const file = this.files[0];
       if (!file) return;
       vidFile = file;
       document.getElementById('vid-preview').src = URL.createObjectURL(file);
-      document.getElementById('vid-preview-wrap').style.display = 'block';
+      document.getElementById('vid-preview-wrap').classList.add('show');
       document.getElementById('vid-info').textContent = `${file.name} · ${(file.size/1024/1024).toFixed(1)} MB`;
       document.getElementById('vid-btn').disabled = false;
     });
@@ -334,7 +1124,9 @@
     document.getElementById('vid-btn').addEventListener('click', async () => {
       if (!vidFile) return;
       const status = document.getElementById('vid-status');
-      mostrarEstado(status, 'loading', '⏳ Convirtiendo vídeo, puede tardar unos minutos...');
+      ocultarEstado(status);
+      mostrarEstado(status, 'loading', 'Convirtiendo vídeo, puede tardar unos minutos...');
+      mostrarProgress('vid-progress');
       document.getElementById('vid-btn').disabled = true;
       const form = new FormData();
       form.append('file', vidFile);
@@ -343,11 +1135,32 @@
         const res = await fetch('/api/convert/video', { method: 'POST', body: form });
         if (!res.ok) throw new Error('Error en el servidor');
         descargar(await res.blob(), vidFile.name, document.getElementById('vid-format').value);
-        mostrarEstado(status, 'success', '✅ ¡Conversión completada!');
+        ocultarProgress('vid-progress');
+        mostrarEstado(status, 'success', '¡Conversión completada!');
+        onConvertSuccess();
       } catch (e) {
-        mostrarEstado(status, 'error', '❌ ' + e.message);
+        ocultarProgress('vid-progress');
+        mostrarEstado(status, 'error', 'Error: ' + e.message);
       } finally {
         document.getElementById('vid-btn').disabled = false;
+      }
+    });
+
+    // ── Tema ──
+    function cambiarTema() {
+      const body = document.body;
+      const btn  = document.getElementById('theme-btn');
+      body.classList.toggle('light-mode');
+      btn.textContent = body.classList.contains('light-mode') ? '☀️' : '🌙';
+      localStorage.setItem('tema', body.classList.contains('light-mode') ? 'light' : 'dark');
+      burstEmojis(['🌓','✨','🎨'], 6);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const temaGuardado = localStorage.getItem('tema');
+      if (temaGuardado === 'light') {
+        document.body.classList.add('light-mode');
+        document.getElementById('theme-btn').textContent = '☀️';
       }
     });
   </script>
