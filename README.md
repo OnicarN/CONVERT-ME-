@@ -15,11 +15,6 @@ ConvertMe es una aplicación web full-stack que permite convertir archivos multi
 
 ---
 
-## 🖼️ Capturas
-
-> *(Añade aquí una captura de pantalla de la UI)*
-
----
 
 ## ⚙️ Funcionalidades
 
