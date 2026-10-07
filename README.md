@@ -162,7 +162,7 @@ docker-compose logs frontend
 
 ## 👨‍💻 Autor
 
-**Víctor Daniel** — [LinkedIn](https://linkedin.com/in/TUPERFIL) · [GitHub](https://github.com/TUUSUARIO)
+**Héctor Daniel** — [LinkedIn](https://linkedin.com/in/TUPERFIL) · [GitHub](https://github.com/TUUSUARIO)
 
 ---
 
